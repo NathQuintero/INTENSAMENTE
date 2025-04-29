@@ -3,7 +3,7 @@ from transformers import AutoModelForSequenceClassification, AutoTokenizer
 import torch
 import safetensors
 
-model_path = "AngellyCris/An-lisis_Sentimientos" - //ESTO ES DEL HUGGING FACE
+model_path = "Nathalita/intensamente_model "
 model = AutoModelForSequenceClassification.from_pretrained(model_path, use_safetensors=True)
 tokenizer = AutoTokenizer.from_pretrained(model_path)
 
