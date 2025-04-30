@@ -1,72 +1,85 @@
 import streamlit as st
 from transformers import AutoModelForSequenceClassification, AutoTokenizer
 import torch
-import safetensors
 
 # 🎯 Configuración de la página
 st.set_page_config(
     page_title="Evaluador PPE Inteligente",
-    layout="wide",
+    layout="centered",
     page_icon="🧠"
 )
 
-# 🌟 Estilos CSS para mejorar la estética
+# 🌟 Estilos CSS personalizados
 st.markdown("""
 <style>
 body {
-    background-color: #F4F6F6;
+    background-color: #F0F8FF;
+    font-family: 'Segoe UI', sans-serif;
 }
 .header-title {
-    font-family: 'Helvetica', sans-serif;
-    color: #2E86C1;
-    font-size: 36px;
+    font-family: 'Segoe UI', sans-serif;
+    color: #1F618D;
+    font-size: 40px;
     text-align: center;
     margin-top: 0;
 }
 .subtext {
-    font-family: 'Helvetica', sans-serif;
     color: #566573;
-    font-size: 18px;
+    font-size: 20px;
     text-align: center;
+    margin-bottom: 30px;
 }
 .text-box {
-    background-color: #FBFCFC;
+    background-color: #ffffff;
+    border: 1px solid #D5D8DC;
     border-radius: 10px;
     padding: 20px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
 }
 .result-card {
-    background-color: #E8F8F5;
-    border: 2px solid #1ABC9C;
+    background-color: #D6EAF8;
+    border: 2px solid #5DADE2;
     border-radius: 10px;
-    padding: 20px;
+    padding: 25px;
     text-align: center;
+    margin-top: 30px;
+    color: #154360;
+}
+.alert {
+    background-color: #FADBD8;
+    border-left: 6px solid #E74C3C;
+    color: #922B21;
+    padding: 20px;
     margin-top: 20px;
+    border-radius: 8px;
+}
+.good-news {
+    background-color: #D4EFDF;
+    border-left: 6px solid #27AE60;
+    color: #1E8449;
+    padding: 20px;
+    margin-top: 20px;
+    border-radius: 8px;
+}
+hr {
+    border: none;
+    height: 1px;
+    background-color: #D5D8DC;
+    margin-top: 40px;
 }
 </style>
 """, unsafe_allow_html=True)
 
-# ✨ Encabezado superior
+# 🧠 Título
 st.markdown("<h1 class='header-title'>🧠 Evaluador Inteligente de Sentimientos</h1>", unsafe_allow_html=True)
-st.markdown("<p class='subtext'>Todos los derechos reservados ©️ | Análisis de emociones a partir de texto</p>", unsafe_allow_html=True)
+st.markdown("<p class='subtext'>¿Cómo estuvo tu día hoy?</p>", unsafe_allow_html=True)
 
-# 📦 Cargar el modelo
+# 📦 Cargar modelo
 model_path = "AngellyCris/modelo_sentimientos"
 model = AutoModelForSequenceClassification.from_pretrained(model_path, use_safetensors=True)
 tokenizer = AutoTokenizer.from_pretrained(model_path)
 
-# 📖 Instrucciones
-with st.expander("📚 FUNCIONAMIENTO"):
-    st.markdown("""
-    - ✍️ Escribe un **texto breve** describiendo cómo te sientes.
-    - 🔎 Presiona **Analizar** y descubre el sentimiento predominante.
-    """)
-
-# 📄 Cuadro de texto para ingresar la descripción
-st.markdown("<div class='text-box'>", unsafe_allow_html=True)
-texto_entrada = st.text_area("✏️ ESCRIBE AQUÍ COMO TE SIENTES:", height=200, placeholder="Me siento feliz de estar aquí...")
-st.markdown("</div>", unsafe_allow_html=True)
-
-# Diccionario de emociones
+# Diccionario de emociones en inglés y su traducción
 id2emotion = {
     0: "neutral",
     1: "suicidal",
@@ -84,7 +97,24 @@ id2emotion = {
     13: "grief"
 }
 
-# Emojis para emociones
+emotion_translation = {
+    "neutral": "neutral",
+    "suicidal": "suicida",
+    "depressed": "deprimido/a",
+    "lonely": "solo/a",
+    "disappointment": "decepcionado/a",
+    "disgust": "asqueado/a",
+    "fear": "asustado/a",
+    "anger": "enojado/a",
+    "sadness": "triste",
+    "hopeless": "sin esperanza",
+    "embarrassment": "avergonzado/a",
+    "remorse": "arrepentido/a",
+    "nervousness": "nervioso/a",
+    "grief": "afligido/a",
+    "desconocido": "desconocido/a"
+}
+
 emotion_emojis = {
     "neutral": "😐",
     "suicidal": "🆘",
@@ -103,29 +133,73 @@ emotion_emojis = {
     "desconocido": "❓"
 }
 
-# 🔍 Botón para analizar el texto
-if st.button("🚀 Analizar Texto"):
-    if texto_entrada.strip():
-        # Tokenización y predicción
-        inputs = tokenizer(texto_entrada, return_tensors="pt", truncation=True, padding=True)
+# Emociones consideradas negativas
+negative_emotions = {
+    "suicidal", "depressed", "lonely", "disappointment", "disgust",
+    "fear", "anger", "sadness", "hopeless", "embarrassment", "remorse",
+    "nervousness", "grief"
+}
 
-        with torch.no_grad():
-            logits = model(**inputs).logits
-        prediccion = torch.argmax(logits, dim=-1).item()
+# 🗂️ Tabs
+tab1, tab2 = st.tabs(["💬 Evaluar mi estado", "ℹ️ ¿Cómo funciona esto?"])
 
-        # Traducir predicción a emoción
-        emocion_predicha = id2emotion.get(prediccion, "desconocido")
-        emoji = emotion_emojis.get(emocion_predicha, "❓")
+with tab1:
+    st.markdown("<div class='text-box'>", unsafe_allow_html=True)
+    texto_entrada = st.text_area("✏️ Cuéntanos cómo te sientes hoy:", height=150, placeholder="Ej: Me siento cansado pero orgulloso de lo que logré.")
+    st.markdown("</div>", unsafe_allow_html=True)
 
-        # 🎨 Mostrar resultado
-        st.markdown(f"""
-        <div class='result-card'>
-            <h2>{emoji} Emoción detectada:</h2>
-            <h1><strong>{emocion_predicha.capitalize()}</strong></h1>
-        </div>
-        """, unsafe_allow_html=True)
-    else:
-        st.warning("⚠️ Por favor, escribe cómo te sientes.")
+    if st.button("🚀 Analizar"):
+        if texto_entrada.strip():
+            inputs = tokenizer(texto_entrada, return_tensors="pt", truncation=True, padding=True)
+            with torch.no_grad():
+                logits = model(**inputs).logits
+            prediccion = torch.argmax(logits, dim=-1).item()
+            emocion_ingles = id2emotion.get(prediccion, "desconocido")
+            emocion_espanol = emotion_translation.get(emocion_ingles, "desconocido")
+            emoji = emotion_emojis.get(emocion_ingles, "❓")
 
-# 🎨 Pie de página decorativo
-st.markdown("<hr><center>Creado con ❤️ por Mí , soporta check</center>", unsafe_allow_html=True)
+            st.markdown(f"""
+            <div class='result-card'>
+                <h2>{emoji} Emoción detectada:</h2>
+                <h1><strong>{emocion_espanol.capitalize()}</strong></h1>
+            </div>
+            """, unsafe_allow_html=True)
+
+            if emocion_ingles in negative_emotions:
+                st.markdown(f"""
+                <div class='alert'>
+                    <h4>🚨 Alerta emocional</h4>
+                    <p>Detectamos una emoción negativa. No estás solo/a. Respira profundo y recuerda que siempre hay alguien dispuesto a ayudarte.</p>
+                    <p><strong>📞 Líneas de atención:</strong></p>
+                    <ul>
+                        <li>Línea Nacional Colombia: 192 opción 4</li>
+                        <li>Línea de la Vida: 01 8000 113 113</li>
+                        <li>Habla con alguien de confianza</li>
+                    </ul>
+                </div>
+                """, unsafe_allow_html=True)
+            else:
+                st.markdown(f"""
+                <div class='good-news'>
+                    <h4>🌈 ¡Nos alegra saber eso!</h4>
+                    <p>Tu emoción refleja bienestar. Esperamos que tu día siga lleno de buenas energías 💖</p>
+                </div>
+                """, unsafe_allow_html=True)
+        else:
+            st.warning("⚠️ Por favor, escribe cómo te sientes.")
+
+with tab2:
+    st.markdown("""
+    ### 🤖 ¿Cómo funciona esto?
+    Esta aplicación usa inteligencia artificial para analizar el sentimiento de tu texto.  
+    Puedes usarla si quieres saber si tus palabras reflejan emociones como tristeza, ansiedad, enojo o simplemente un estado neutral.
+
+    **Pasos para usarla:**
+    1. ✍️ Escribe cómo te sientes.
+    2. 🚀 Haz clic en **Analizar**.
+    3. 💡 Recibe el resultado con una etiqueta, emoji y sugerencias útiles.
+
+    > **Nota:** Esta herramienta no reemplaza a un profesional. Si necesitas ayuda, no dudes en buscar apoyo emocional.
+    """)
+
+st.markdown("<hr><center>Hecho con ❤️ para acompañarte emocionalmente</center>", unsafe_allow_html=True)
