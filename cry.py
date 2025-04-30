@@ -153,4 +153,50 @@ with tab1:
             prediccion = torch.argmax(logits, dim=-1).item()
             emocion_ingles = id2emotion.get(prediccion, "desconocido")
             emocion_espanol = emotion_translation.get(emocion_ingles, "desconocido")
-            emoji = emotion_emojis.get(emocion_
+            emoji = emotion_emojis.get(emocion_ingles, "❓")
+
+            st.markdown(f"""
+            <div class='result-card'>
+                <h2>{emoji} Emoción detectada:</h2>
+                <h1><strong>{emocion_espanol.capitalize()}</strong></h1>
+            </div>
+            """, unsafe_allow_html=True)
+
+            if emocion_ingles in negative_emotions:
+                st.markdown(f"""
+                <div class='alert'>
+                    <h4>🚨 Alerta emocional</h4>
+                    <p>Detectamos una emoción negativa. No estás solo/a. Respira profundo y recuerda que siempre hay alguien dispuesto a ayudarte.</p>
+                    <p><strong>📞 Líneas de atención:</strong></p>
+                    <ul>
+                        <li>Línea Nacional Colombia: 192 opción 4</li>
+                        <li>Línea de la Vida: 01 8000 113 113</li>
+                        <li>Habla con alguien de confianza</li>
+                    </ul>
+                </div>
+                """, unsafe_allow_html=True)
+            else:
+                st.markdown(f"""
+                <div class='good-news'>
+                    <h4>🌈 ¡Nos alegra saber eso!</h4>
+                    <p>Tu emoción refleja bienestar. Esperamos que tu día siga lleno de buenas energías 💖</p>
+                </div>
+                """, unsafe_allow_html=True)
+        else:
+            st.warning("⚠️ Por favor, escribe cómo te sientes.")
+
+with tab2:
+    st.markdown("""
+    ### 🤖 ¿Cómo funciona esto?
+    Esta aplicación usa inteligencia artificial para analizar el sentimiento de tu texto.  
+    Puedes usarla si quieres saber si tus palabras reflejan emociones como tristeza, ansiedad, enojo o simplemente un estado neutral.
+
+    **Pasos para usarla:**
+    1. ✍️ Escribe cómo te sientes.
+    2. 🚀 Haz clic en **Analizar**.
+    3. 💡 Recibe el resultado con una etiqueta, emoji y sugerencias útiles.
+
+    > **Nota:** Esta herramienta no reemplaza a un profesional. Si necesitas ayuda, no dudes en buscar apoyo emocional.
+    """)
+
+st.markdown("<hr><center>Hecho con ❤️ para acompañarte emocionalmente</center>", unsafe_allow_html=True)
