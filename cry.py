@@ -4,7 +4,7 @@ import torch
 
 # Configuración de página
 st.set_page_config(
-    page_title="Evaluador PPE Inteligente",
+    page_title="Detector de sentimientos Intensamente",
     layout="centered",
     page_icon="🧠"
 )
@@ -18,8 +18,15 @@ body {
 }
 .header-title {
     color: #1F618D;
-    font-size: 40px;
+    font-size: 36px;
     text-align: center;
+    font-weight: bold;
+}
+.author {
+    text-align: center;
+    font-size: 18px;
+    color: #2E4053;
+    margin-bottom: 20px;
 }
 .subtext {
     color: #566573;
@@ -65,14 +72,21 @@ hr {
     background-color: #D5D8DC;
     margin-top: 40px;
 }
+footer {
+    text-align: center;
+    font-size: 15px;
+    color: #888;
+    margin-top: 40px;
+}
 </style>
 """, unsafe_allow_html=True)
 
-# Título
-st.markdown("<h1 class='header-title'>🧠 Evaluador Inteligente de Sentimientos</h1>", unsafe_allow_html=True)
+# Título y autor
+st.markdown("<h1 class='header-title'>🧠 Detector de sentimientos Intensamente</h1>", unsafe_allow_html=True)
+st.markdown("<p class='author'>Hecho por Nathalia Quintero</p>", unsafe_allow_html=True)
 st.markdown("<p class='subtext'>¿Cómo estuvo tu día hoy?</p>", unsafe_allow_html=True)
 
-# Cargar modelo (sin cambios para evitar error)
+# Cargar modelo
 model_path = "AngellyCris/modelo_sentimientos"
 model = AutoModelForSequenceClassification.from_pretrained(model_path)
 tokenizer = AutoTokenizer.from_pretrained(model_path)
@@ -196,7 +210,10 @@ with tab2:
     2. 🚀 Haz clic en **Analizar**.
     3. 💡 Recibe el resultado con una etiqueta, emoji y sugerencias útiles.
 
+    ---
+    Nathalia Quintero, estudiante de Ingeniería de Sistemas de la UNAB.
+
     > **Nota:** Esta herramienta no reemplaza a un profesional. Si necesitas ayuda, no dudes en buscar apoyo emocional.
     """)
 
-st.markdown("<hr><center>Hecho con ❤️ para acompañarte emocionalmente</center>", unsafe_allow_html=True)
+st.markdown("<hr><footer>© Todos los derechos reservados</footer>", unsafe_allow_html=True)
